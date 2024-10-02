@@ -21,28 +21,21 @@ DEVICE="-kenzo-"
 FINAL_ZIP="$KERNEL_NAME""$DEVICE""$DATE"
 
 BUILD_START=$(date +"%s")
-
-# Cleanup before
-rm -rf $Anykernel_DIR/*zip
-rm -rf $Anykernel_DIR/Image.gz-dtb
-rm -rf arch/arm64/boot/Image
-rm -rf arch/arm64/boot/dts/qcom/kenzo-msm8956-mtp.dtb
-rm -rf arch/arm64/boot/Image.gz
-rm -rf arch/arm64/boot/Image.gz-dtb
-
+sudo apt update -y && sudo apt install -y cpio flex bc bison gcc-aarch64* clang make cmake
+git clone --depth=1 https://github.com/xiangfeidexiaohuo/GCC-4.9 tc
 # Export few variables
-export KBUILD_BUILD_USER="NotDheeraj06"
-export KBUILD_BUILD_HOST="Archlinux"
-export CROSS_COMPILE=aarch64-linux-
+export KBUILD_BUILD_USER="kenichi"
+export KBUILD_BUILD_HOST="git"
+export CROSS_COMPILE=aarch64-linux-android-
 export ARCH="arm64"
 export USE_CCACHE=1
+export PATH=$PATH:$(pwd)/tc/bin
 
 echo -e "$green***********************************************"
 echo  "           Compiling Optimus Kernel                    "
 echo -e "***********************************************"
 
 # Finally build it
-make clean && make mrproper
 make kenzo_defconfig
 make -j$(nproc --all)
 
@@ -54,19 +47,11 @@ echo -e "***********************************************"
 cp arch/arm64/boot/Image.gz-dtb $Anykernel_DIR
 cd $Anykernel_DIR
 zip -r9 $FINAL_ZIP.zip * -x .git README.md *placeholder
+curl bashupload.com -T $FINAL_ZIP.zip
 
 echo -e "$cyan***********************************************"
 echo  "            Cleaning up the mess created               "
 echo -e "***********************************************$default"
-
-# Cleanup again
-cd ../
-rm -rf $Anykernel_DIR/Image.gz-dtb
-rm -rf arch/arm64/boot/Image
-rm -rf arch/arm64/boot/dts/qcom/kenzo-msm8956-mtp.dtb
-rm -rf arch/arm64/boot/Image.gz
-rm -rf arch/arm64/boot/Image.gz-dtb
-make clean && make mrproper
 
 # Build complete
 BUILD_END=$(date +"%s")
